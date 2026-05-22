@@ -129,34 +129,6 @@ const About = () => {
         </div>
       </div>
 
-      {/* Timeline or Values Section */}
-      <div className="py-14 relative overflow-hidden bg-gradient-to-b from-transparent to-[#e2e8f0]/30">
-        <div className="container mx-auto px-8 md:px-16 lg:px-24 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-5 tracking-tight">Built for <span className="text-[#1d4ed8] inline border-b-[3px] border-[#3b82f6] pb-1">Impact.</span></h2>
-           <p className="text-[#64748b] text-[0.95rem] md:text-[1.05rem] max-w-2xl mx-auto font-medium">
-  We simplify opportunities, connect people with the right support, and help individuals, startups, and communities grow with confidence.
-</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { year: "2024", event: "Platform Launch", detail: "Started with 100 central schemes and a team of 5 social workers." },
-              { year: "2025", event: "National Scaling", detail: "Expanded to 22 states and integrated AI eligibility engine." },
-              { year: "Future", event: "Unified Welfare", detail: "Aiming to build a single-window portal for every Indian citizen." }
-            ].map((item, i) => (
-              <div key={i} className="relative p-8 bg-[#0f172a] rounded-[2rem] shadow-2xl hover:shadow-blue-500/20 transition-all hover:-translate-y-2 group overflow-hidden border border-[#1e293b]">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#3b82f6] opacity-10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
-                <div className="text-5xl font-black text-[#1e293b] absolute top-6 right-6 z-0 select-none group-hover:text-[#334155] transition-colors">{item.year}</div>
-                <div className="relative z-10">
-                  <h4 className="text-xl font-extrabold text-white mb-3 tracking-tight">{item.event}</h4>
-                  <p className="text-[#94a3b8] font-medium text-[0.9rem] leading-relaxed">{item.detail}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       <style>{`
         @keyframes float {

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import SchemeApplyModal from "../components/homepage/SchemeApplyModal";
 import { STATES, BENEFICIARY_TYPES, GENDERS, SPONSORS, CASTES } from "../utils/filterConstants";
 
 /* ── Scheme data ─────────────────────────────────────────────── */
@@ -173,6 +174,8 @@ const FilterSelect = ({ label, value, onChange, options }) => (
 const HealthSchemes = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedService, setSelectedService] = useState("");
   const [showFilters, setShowFilters] = useState(true);
   const [filters, setFilters] = useState({
     state: "All States",
@@ -203,7 +206,14 @@ const HealthSchemes = () => {
   }, [search, filters]);
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb]">
+    <>
+      {showModal && (
+        <SchemeApplyModal
+          schemeName={selectedService}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+      <div className="min-h-screen bg-[#f5f7fb]">
 
       {/* ── Blue header banner ─────────────────────────────── */}
       {/* <div className="bg-gradient-to-r from-[#1e3a8a] to-[#2563eb] px-6 md:px-12 py-8"> */}
@@ -363,15 +373,25 @@ const HealthSchemes = () => {
                     </div>
 
                     {/* Buttons */}
+                    
                     <div className="flex flex-col gap-2 w-full">
                       <button
-                        onClick={() => navigate("/scheme-details", { state: { scheme } })}
+                        onClick={() => {
+                          setSelectedService(scheme.title);
+                          setShowModal(true);
+                        }}
                         className="w-full inline-flex items-center justify-center gap-1.5 bg-[#2563eb] text-white text-[0.8rem] font-bold rounded-xl px-4 py-2.5 border-none cursor-pointer hover:bg-[#2563eb] transition-colors"
                         style={{ boxShadow: "0 2px 8px rgba(21,128,61,0.25)" }}
                       >
-                        View Details →
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block mr-1"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Apply Now
                       </button>
-                      
+                      <button
+                        onClick={() => navigate("/scheme-details", { state: { scheme } })}
+                        className="w-full inline-flex items-center justify-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[0.8rem] font-bold rounded-xl px-4 py-2.5 cursor-pointer transition-colors"
+                      >
+                        View Details
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -381,6 +401,7 @@ const HealthSchemes = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

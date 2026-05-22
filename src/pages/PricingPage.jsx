@@ -224,21 +224,21 @@ const PricingPage = () => {
               </div>
 
               {/* FLEXIBLE CONTENT */}
-              <div className="flex-1">
-                <h3 className="text-xs font-bold uppercase tracking-wide text-[#0f172a] mb-3">
+              <div className="flex-1 space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-[#0f172a]">
                   Includes:
                 </h3>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {governmentFeatures.map((item) => (
-                    <div
-                      key={item}
-                      className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3 py-2 text-xs font-semibold text-[#0f172a] text-center"
-                    >
+                {governmentFeatures.map((item) => (
+                  <div
+                    key={item}
+                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-4 py-3"
+                  >
+                    <div className="font-bold text-sm text-[#0f172a]">
                       {item}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
 
               {/* BOTTOM */}

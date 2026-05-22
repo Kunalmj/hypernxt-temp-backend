@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { STATES } from "../utils/filterConstants";
 
 const Icons = {
   Category: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
@@ -250,16 +251,7 @@ const WomenPortal = () => {
                   className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all text-[15px] font-medium text-slate-700 bg-white appearance-none cursor-pointer"
                 >
                   <option value="" disabled>Select location</option>
-                  {[
-                    "Delhi NCR",
-                    "Mumbai",
-                    "Bangalore",
-                    "Hyderabad",
-                    "Chennai",
-                    "Kolkata",
-                    "Rural Area",
-                    "Other",
-                  ].map(l => (
+                  {STATES.map(l => (
                     <option key={l} value={l}>{l}</option>
                   ))}
                 </select>
