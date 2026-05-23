@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SchemeApplyModal from "../components/homepage/SchemeApplyModal";
+import SchemeCard from "../components/SchemeCard";
 import { fetchCategory } from "../services/api";
 import { STATES, BENEFICIARY_TYPES, GENDERS, SPONSORS, CASTES } from "../utils/filterConstants";
 
@@ -38,14 +39,6 @@ const mockSchemes = [
   },
 ];
 
-/* ── Tag badge ───────────────────────────────────────────────── */
-const Tag = ({ label }) => (
-  <span className="inline-flex items-center text-[0.72rem] font-semibold px-2.5 py-0.5 rounded-full border"
-    style={{ background: "#eff6ff", borderColor: "#bfdbfe", color: "#2563eb" }}>
-    {label}
-  </span>
-);
-
 /* ── Filter select ───────────────────────────────────────────── */
 const FilterSelect = ({ label, value, onChange, options }) => (
   <div className="mb-5">
@@ -72,6 +65,7 @@ const SkillsSchemes = () => {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [usingFallback, setUsingFallback] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
   const [filters, setFilters] = useState({
     state: "All States",
     beneficiaryType: "All Beneficiaries",
@@ -151,7 +145,7 @@ const SkillsSchemes = () => {
           style={{
             backgroundImage: `
               linear-gradient(rgba(15,23,42,0.82), rgba(30,41,59,0.82)),
-              url('/scolarship.png')
+              url('/skills.jpg')
             `,
             backgroundSize: "cover",
             backgroundPosition: "center 85%",
@@ -236,52 +230,15 @@ const SkillsSchemes = () => {
                 </div>
               ) : (
                 filtered.map((scheme) => (
-                  <div key={scheme.id} className="bg-white rounded-2xl p-6 flex gap-4 transition-all duration-200" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(37,99,235,0.06), inset 0 0 0 1px rgba(226,232,240,0.8)" }}>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-[1rem] font-bold text-[#1e3a8a] mb-0.5 leading-snug cursor-pointer hover:underline">{scheme.title}</h3>
-                      <p className="text-[0.77rem] text-[#64748b] mb-2">{scheme.ministry}</p>
-                      <p className="text-[0.83rem] text-[#374151] leading-relaxed mb-3">{scheme.desc && scheme.desc.length > 180 ? scheme.desc.slice(0, 180) + "..." : scheme.desc}</p>
-                      <div className="flex flex-wrap gap-1.5">{scheme.tags.map((t) => <Tag key={t} label={t} />)}</div>
-                      {scheme.website && (
-                        <div className="mt-3">
-                          <a 
-                            href={scheme.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-semibold"
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                            Official Website: <span className="underline">{scheme.website}</span>
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col justify-between items-end flex-shrink-0 min-w-[160px] gap-3">
-                      <div className="flex flex-col gap-2 text-right w-full">
-                        <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-xl px-3 py-2"><p className="text-[0.68rem] text-[#2563eb] font-bold uppercase tracking-wide mb-0.5">Benefit</p><p className="text-[0.82rem] font-semibold text-[#0f172a]">{scheme.benefit}</p></div>
-                      </div>
-                      <div className="flex flex-col gap-2 w-full">
-                        <button
-                          onClick={() => {
-                            setSelectedService(scheme.title);
-                            setShowModal(true);
-                          }}
-                          className="w-full inline-flex items-center justify-center gap-1.5 bg-[#1e3a8a] text-white text-[0.8rem] font-bold rounded-xl px-4 py-2.5 border-none cursor-pointer hover:bg-[#1d4ed8] transition-colors"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block mr-1"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                          Apply Now
-                        </button>
-                        <button
-                          onClick={() => navigate("/scheme-details", { state: { scheme } })}
-                          className="w-full inline-flex items-center justify-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[0.8rem] font-bold rounded-xl px-4 py-2.5 cursor-pointer transition-colors"
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <SchemeCard
+                    key={scheme.id}
+                    scheme={scheme}
+                    expandedId={expandedId}
+                    setExpandedId={setExpandedId}
+                    setSelectedService={setSelectedService}
+                    setShowModal={setShowModal}
+                    colorTheme="blue"
+                  />
                 ))
               )}
             </div>
