@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { submitApplication } from "../utils/applicationsStore";
 
 const WomenApplyForm = () => {
   const navigate = useNavigate();
@@ -72,6 +73,16 @@ const WomenApplyForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    submitApplication({
+      id: `APP-WMN-${Date.now().toString().slice(-4)}`,
+      applicantName: formData.fullName,
+      phone: formData.phone,
+      state: formData.state,
+      schemeName: program?.title || "Women Program Support",
+      schemeType: "Women Programs",
+      status: "pending",
+      details: formData,
+    });
     setSubmitted(true);
   };
 

@@ -46,6 +46,7 @@ import WomenChildSchemes from "./pages/WomenChildSchemes";
 import SchemeDetails from "./pages/SchemeDetails";
 import PricingPage from "./pages/PricingPage";
 import FAQPage from "./pages/faqPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const router = createBrowserRouter([
   {
@@ -101,7 +102,8 @@ const router = createBrowserRouter([
       { path: "citizen-schemes/women", element: <WomenChildSchemes /> },
       { path: "scheme-details", element: <SchemeDetails /> },
       { path: "price", element: <PricingPage /> },
-       { path: "faq", element: <FAQPage /> },
+      { path: "faq", element: <FAQPage /> },
+      { path: "admin/dashboard", element: <AdminDashboard /> },
     ],
   },
 ]);

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { submitApplication } from "../utils/applicationsStore";
+import { indianStates } from "../utils/states";
 
 const ResearchApplyForm = () => {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ const ResearchApplyForm = () => {
     bankName: "",
     accountNo: "",
     ifsc: "",
+    state: "",
     declaration: false,
   });
 
@@ -37,7 +40,7 @@ const ResearchApplyForm = () => {
     if (targetIndex <= activeSection) return true;
 
     const requiredFields = {
-      0: ["investigatorName", "designation", "department", "institution", "email", "phone"],
+      0: ["investigatorName", "designation", "department", "institution", "email", "phone", "state"],
       1: ["projectTitle", "researchArea", "duration", "summary"],
       2: ["budget", "bankName", "accountNo", "ifsc"],
     };
@@ -72,6 +75,16 @@ const ResearchApplyForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    submitApplication({
+      id: `APP-RES-${Date.now().toString().slice(-4)}`,
+      applicantName: formData.investigatorName,
+      phone: formData.phone,
+      state: formData.state,
+      schemeName: grant?.title || "Research Grant Application",
+      schemeType: "Research Grants",
+      status: "pending",
+      details: formData,
+    });
     setSubmitted(true);
   };
 
@@ -161,6 +174,7 @@ const ResearchApplyForm = () => {
               <Field label="Institution Name" required value={formData.institution} onChange={(v) => update("institution", v)} placeholder="e.g. IIT Bombay" />
               <Field label="Official Email Address" type="email" required value={formData.email} onChange={(v) => update("email", v)} placeholder="ananya@iitb.ac.in" />
               <Field label="Contact Number" type="tel" required value={formData.phone} onChange={(v) => update("phone", v)} placeholder="+91 98765 43210" />
+              <SelectField label="State / UT" required value={formData.state} onChange={(v) => update("state", v)} options={indianStates.filter(s => s !== "All India")} />
             </div>
             <div className="flex justify-end pt-4 flex-col items-end gap-3">
               {error && (

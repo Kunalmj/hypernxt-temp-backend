@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { submitApplication } from "../utils/applicationsStore";
 
 const ScholarshipApplyForm = () => {
   const navigate = useNavigate();
@@ -78,6 +79,16 @@ const ScholarshipApplyForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    submitApplication({
+      id: `APP-SCH-${Date.now().toString().slice(-4)}`,
+      applicantName: formData.fullName,
+      phone: formData.phone,
+      state: formData.state,
+      schemeName: scholarship?.title || "Post Matric Scholarship",
+      schemeType: "Scholarship",
+      status: "pending",
+      details: formData,
+    });
     setSubmitted(true);
   };
 
