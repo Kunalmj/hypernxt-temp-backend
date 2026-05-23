@@ -237,26 +237,31 @@ const AgriculturePortal = () => {
               <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 mb-2">State</label>
-                    <select
-                      value={data.state}
-                      onChange={(e) => setData({ ...data, state: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white text-[15px]"
-                    >
-                      <option value="">Select State</option>
-                      {indianStates.map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
+                    <label className="block text-sm font-semibold text-slate-800 mb-2">State</label>
+                    <div className="relative">
+                      <select
+                        value={data.state}
+                        onChange={(e) => setData({ ...data, state: e.target.value })}
+                        className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all text-[15px] font-medium text-slate-700 bg-white appearance-none cursor-pointer"
+                      >
+                        <option value="">Select State</option>
+                        {indianStates.map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                      </div>
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 mb-2">District (Optional)</label>
+                    <label className="block text-sm font-semibold text-slate-800 mb-2">District (Optional)</label>
                     <input
                       type="text"
                       value={data.district || ""}
                       onChange={(e) => setData({ ...data, district: e.target.value })}
                       placeholder="Enter district"
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-[15px]"
+                      className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all text-[15px] font-medium text-slate-700"
                     />
                   </div>
                 </div>

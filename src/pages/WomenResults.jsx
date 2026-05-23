@@ -1,21 +1,81 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { fetchCategory } from "../services/api";
 import { womenPrograms as mockPrograms } from "../data/womenData";
 import RequestServiceModal from "../components/homepage/RequestServiceModal";
 
 const WomenResults = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [usingFallback, setUsingFallback] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-const [selectedService, setSelectedService] = useState("");
+  const [selectedService, setSelectedService] = useState("");
 
   const query = state?.query || null;
 
-  const { filteredPrograms, isExactMatch } = useMemo(() => {
-    if (!query) return { filteredPrograms: mockPrograms, isExactMatch: false };
+  useEffect(() => {
+    setLoading(true);
+    fetchCategory("women_programs/")
+      .then((res) => {
+        const rawResults = res?.results || [];
+        const mapped = rawResults.map((item, index) => {
+          return {
+            id: item.id || `api-${index}`,
+            title: item.title || "Untitled Program",
+            provider: item.provider || "Government Department",
+            benefit: item.amount || item.benefit || "Refer to official website",
+            deadline: item.deadline || "Check official website",
+            location: item.location || "Any",
+            age: item.age || "Any",
+            type: item.type || "Any",
+            education: item.education || "Any",
+            need: item.need || "Any",
+            tags: Array.isArray(item.tags)
+              ? item.tags
+              : (typeof item.tags === "string"
+                ? item.tags.split(",").map(t => t.trim()).filter(Boolean)
+                : [item.type, item.education || "Any"].filter(Boolean)),
+            website: item.url || "#",
+            description: item.description || `${item.title} offered by ${item.provider || "Government Department"}.`,
+            applicationMode: "Online",
+            selectionProcess: "Document Verification -> Approval",
+            benefits: item.amount ? [item.amount] : null,
+            documentsRequired: null,
+            importantDates: {
+              applicationStart: "Refer to official website",
+              applicationEnd: item.deadline || "Check official website",
+              shortlistAnnouncement: "Refer to official website",
+              disbursement: "As per guidelines"
+            },
+            contact: null
+          };
+        });
+        setPrograms(mapped);
+        setUsingFallback(false);
+        setError(null);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch women programs, falling back to local database:", err);
+        setPrograms(mockPrograms);
+        setUsingFallback(true);
+        setError(null);
+        setLoading(false);
+      });
+  }, [retryCount]);
 
-    const matches = mockPrograms.filter(p => {
+  const { filteredPrograms, isExactMatch } = useMemo(() => {
+    const basePrograms = programs.length > 0 ? programs : [];
+    if (!query || basePrograms.length === 0) {
+      return { filteredPrograms: basePrograms, isExactMatch: false };
+    }
+
+    const matches = basePrograms.filter(p => {
       if (query.type && p.type !== "Any" && p.type !== query.type) return false;
       if (query.age && p.age !== "Any" && p.age !== query.age) return false;
       if (query.education && p.education !== "Any" && p.education !== query.education) return false;
@@ -27,9 +87,9 @@ const [selectedService, setSelectedService] = useState("");
     if (matches.length > 0) {
       return { filteredPrograms: matches, isExactMatch: true };
     } else {
-      return { filteredPrograms: mockPrograms, isExactMatch: false };
+      return { filteredPrograms: basePrograms, isExactMatch: false };
     }
-  }, [query]);
+  }, [programs, query]);
 
   const handleNewSearch = () => {
     navigate("/women-programs");
@@ -69,7 +129,9 @@ const [selectedService, setSelectedService] = useState("");
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Your Program Matches</h1>
           <p className="text-lg text-blue-100 max-w-2xl opacity-90">
-            {isExactMatch
+            {loading || error
+              ? "Connecting to program portals, please wait…"
+              : isExactMatch
               ? `We found ${filteredPrograms.length} tailored opportunities based on your profile.`
               : "No exact matches found for your highly specific criteria. Showing all available programs instead."}
           </p>
@@ -100,7 +162,32 @@ const [selectedService, setSelectedService] = useState("");
       {/* Results Section */}
       <div className="max-w-5xl mx-auto px-6 mt-6">
 
-        {!isExactMatch && query && (
+        {!loading && !error && usingFallback && (
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg mb-8 shadow-sm flex items-center justify-between gap-4">
+            <div className="flex items-start gap-4 text-left">
+              <svg className="w-6 h-6 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <h3 className="text-amber-800 font-semibold">Offline Database Mode</h3>
+                <p className="text-amber-700 text-sm mt-1">
+                  We are showing matching programs from our offline backup because the live server is currently sleeping.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setLoading(true);
+                setRetryCount(prev => prev + 1);
+              }}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
+            >
+              Retry Live Connection
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && !isExactMatch && query && filteredPrograms.length > 0 && (
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-8 shadow-sm flex items-start gap-4">
             <svg className="w-6 h-6 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             <div>
@@ -111,7 +198,43 @@ const [selectedService, setSelectedService] = useState("");
         )}
 
         <div className="grid gap-6">
-          {filteredPrograms.map((p) => (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <svg className="animate-spin h-10 w-10 text-blue-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p className="text-slate-700 font-semibold text-lg mb-1">
+                {retryCount > 0 ? "Retrying connection…" : "Fetching programs…"}
+              </p>
+              <p className="text-slate-400 text-sm">The data server may take up to 30 seconds to start up</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-amber-100 shadow-sm">
+              <svg className="w-12 h-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              <p className="text-red-600 font-semibold mb-1">Could not reach the program portal</p>
+              <p className="text-slate-500 text-sm mb-5">The server took too long to respond. Please try again.</p>
+              <button
+                onClick={() => { setError(null); setRetryCount((c) => c + 1); setLoading(true); }}
+                className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Retry Now
+              </button>
+            </div>
+          ) : filteredPrograms.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <svg className="w-12 h-12 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <p className="text-slate-700 font-semibold mb-1">No programs found</p>
+              <p className="text-slate-500 text-sm mb-4">Try adjusting your search filters to see more results.</p>
+              <button
+                onClick={handleNewSearch}
+                className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                New Search
+              </button>
+            </div>
+          ) : (
+            filteredPrograms.map((p) => (
             <div key={p.id} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col md:flex-row flex-wrap gap-6 md:items-center">
 
               <div className="flex-1 space-y-4">
@@ -126,7 +249,13 @@ const [selectedService, setSelectedService] = useState("");
 
                 <h2 className="text-2xl font-bold text-slate-800">{p.title}</h2>
                 <p className="text-sm text-slate-500 font-medium">{p.provider}</p>
-                <p className="text-slate-600 text-sm">{p.description}</p>
+                <p className="text-slate-600 text-sm">
+                  {expandedId === p.id 
+                    ? p.description 
+                    : (p.description && p.description.length > 180 
+                      ? p.description.slice(0, 180) + "..." 
+                      : p.description)}
+                </p>
 
                 <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
                   <div className="flex items-center gap-1.5">
@@ -152,6 +281,23 @@ const [selectedService, setSelectedService] = useState("");
                     </span>
                   ))}
                 </div>
+                {p.website && p.website !== "#" && (
+                  <div className="mt-3">
+                    <a 
+                      href={p.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-semibold w-full"
+                    >
+                      <svg className="w-3.5 h-3.5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      <span className="underline break-all flex-1 min-w-0">
+                        Official Website: {p.website}
+                      </span>
+                    </a>
+                  </div>
+                )}
               </div>
 
               <div className="md:w-48 flex-shrink-0 flex flex-col gap-3">
@@ -293,10 +439,10 @@ const [selectedService, setSelectedService] = useState("");
                       href={p.website} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-800 hover:underline transition-all"
+                      className="flex items-start gap-2 text-sm text-blue-700 hover:text-blue-800 hover:underline transition-all min-w-0 flex-1 w-full sm:w-auto"
                     >
-                      <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                      <span className="font-medium">{p.website || "Official website"}</span>
+                      <svg className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                      <span className="font-medium break-all flex-1 min-w-0">{p.website || "Official website"}</span>
                     </a>
                     <button
                       // onClick={() => navigate("/women-apply", { state: { program: p } })}
@@ -314,7 +460,7 @@ const [selectedService, setSelectedService] = useState("");
               )}
 
             </div>
-          ))}
+          )))}
           <style>{`
             @keyframes fadeIn {
               from { opacity: 0; transform: translateY(8px); }
