@@ -69,13 +69,7 @@ const ScholarshipPortal = () => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      const filtered = scholarships.filter((s) => {
-        if (data.type && s.type !== data.type) return false;
-        if (data.level && s.level !== data.level) return false;
-        if (data.field && s.field !== data.field && s.field !== "General") return false;
-        return true;
-      });
-      navigate("/scholarship-results", { state: { results: filtered } });
+      navigate("/scholarship-results", { state: { query: data } });
     }, 1500);
   };
 
