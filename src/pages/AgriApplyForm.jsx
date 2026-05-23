@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { submitApplication } from "../utils/applicationsStore";
 
 const AgriApplyForm = () => {
   const navigate = useNavigate();
@@ -72,6 +73,16 @@ const AgriApplyForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    submitApplication({
+      id: `APP-AGR-${Date.now().toString().slice(-4)}`,
+      applicantName: formData.farmerName,
+      phone: formData.phone,
+      state: formData.state,
+      schemeName: scheme?.title || "Agriculture Scheme Support",
+      schemeType: "Agriculture",
+      status: "pending",
+      details: formData,
+    });
     setSubmitted(true);
   };
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { submitApplication } from "../utils/applicationsStore";
 
 const TenderApplyForm = () => {
   const navigate = useNavigate();
@@ -75,6 +76,16 @@ const TenderApplyForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    submitApplication({
+      id: `APP-TND-${Date.now().toString().slice(-4)}`,
+      applicantName: formData.companyName,
+      phone: formData.phone,
+      state: formData.stateField,
+      schemeName: tender?.title || "Tender Bid Application",
+      schemeType: "Tenders",
+      status: "pending",
+      details: formData,
+    });
     setSubmitted(true);
   };
 

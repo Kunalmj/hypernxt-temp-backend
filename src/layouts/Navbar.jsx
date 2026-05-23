@@ -5,6 +5,16 @@ function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const [bottomOffset, setBottomOffset] = useState(24);
+  const [admin, setAdmin] = useState(null);
+
+  useEffect(() => {
+    const session = localStorage.getItem("form_ease_admin");
+    if (session) {
+      setAdmin(JSON.parse(session));
+    } else {
+      setAdmin(null);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (location.pathname === "/ai-helper") return;
@@ -83,6 +93,7 @@ function Navbar() {
             { to: "/about", label: "About Us" },
             { to: "/browse-all", label: "Services" },
              { to: "/price", label: "Price" },
+             ...(admin ? [{ to: "/admin/dashboard", label: "Admin Dashboard" }] : []),
           ].map((link) => (
             <NavLink
               key={link.to}
@@ -105,25 +116,44 @@ function Navbar() {
 
         {/* RIGHT SIDE */}
         <div style={{ display:"flex", alignItems:"center", gap:"12px" }} className="hide-mobile">
-          {/* Log In */}
-          <Link
-            to="/login"
-            style={{ background:"transparent", color:"#1e3a8a", border:"none", padding:"9px 16px", borderRadius:"8px", fontSize:"0.875rem", fontWeight:"700", cursor:"pointer", textDecoration:"none", transition:"opacity 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.opacity="0.8"}
-            onMouseLeave={e => e.currentTarget.style.opacity="1"}
-          >
-            Log In
-          </Link>
+          {admin ? (
+            <>
+              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "#475569", border: "1px solid #e2e8f0", padding: "8px 16px", borderRadius: "9999px", background: "#f8fafc" }}>
+                {admin.username} ({admin.location})
+              </div>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("form_ease_admin");
+                  window.location.href = "/";
+                }}
+                style={{ background: "#dc2626", color: "white", border: "none", padding: "10px 24px", borderRadius: "9999px", fontSize: "0.875rem", fontWeight: "700", cursor: "pointer", transition: "background 0.2s" }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Log In */}
+              <Link
+                to="/login"
+                style={{ background:"transparent", color:"#1e3a8a", border:"none", padding:"9px 16px", borderRadius:"8px", fontSize:"0.875rem", fontWeight:"700", cursor:"pointer", textDecoration:"none", transition:"opacity 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.opacity="0.8"}
+                onMouseLeave={e => e.currentTarget.style.opacity="1"}
+              >
+                Log In
+              </Link>
 
-          {/* Sign Up */}
-          <Link
-            to="/signup"
-            style={{ background:"#1e3a8a", color:"white", border:"none", padding:"10px 24px", borderRadius:"9999px", fontSize:"0.875rem", fontWeight:"700", cursor:"pointer", textDecoration:"none", transition:"background 0.2s", boxShadow:"0 2px 8px rgba(30,58,138,0.25)", display:"inline-block" }}
-            onMouseEnter={e => e.currentTarget.style.background="#1e40af"}
-            onMouseLeave={e => e.currentTarget.style.background="#1e3a8a"}
-          >
-            Sign Up
-          </Link>
+              {/* Sign Up */}
+              <Link
+                to="/signup"
+                style={{ background:"#1e3a8a", color:"white", border:"none", padding:"10px 24px", borderRadius:"9999px", fontSize:"0.875rem", fontWeight:"700", cursor:"pointer", textDecoration:"none", transition:"background 0.2s", boxShadow:"0 2px 8px rgba(30,58,138,0.25)", display:"inline-block" }}
+                onMouseEnter={e => e.currentTarget.style.background="#1e40af"}
+                onMouseLeave={e => e.currentTarget.style.background="#1e3a8a"}
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         {/* MOBILE BUTTON */}
@@ -140,15 +170,11 @@ function Navbar() {
       {open && (
         <div style={{ pointerEvents:"auto", position: "absolute", top: "90px", left: "24px", right: "24px", background:"rgba(255,255,255,0.96)", backdropFilter:"blur(16px)", border:"1px solid rgba(191,219,254,0.5)", borderRadius:"24px", padding:"16px 24px 20px", boxShadow:"0 20px 40px rgba(0,0,0,0.1)" }}>
           {[
-            // { to: "/", label: "Home" },
-            // { to: "/scholarships", label: "Scholarships" },
-            // { to: "/startup-msme", label: "Startup & MSME" },
-            // { to: "/agriculture", label: "Agriculture" },
-            // { to: "/tenders", label: "Tenders" },
-              { to: "/", label: "Home", end: true },
+            { to: "/", label: "Home", end: true },
             { to: "/about", label: "About Us" },
             { to: "/browse-all", label: "Services" },
              { to: "/price", label: "Price" },
+             ...(admin ? [{ to: "/admin/dashboard", label: "Admin Dashboard" }] : []),
           ].map((link) => (
             <Link
               key={link.to}
@@ -160,12 +186,26 @@ function Navbar() {
             </Link>
           ))}
           <div style={{ display:"flex", gap:"10px", marginTop:"12px" }}>
-            <Link to="/login" style={{ flex:1, background:"transparent", color:"#1e3a8a", border:"1px solid #1e3a8a", padding:"11px", borderRadius:"8px", fontWeight:"700", fontSize:"0.9rem", cursor:"pointer", textDecoration:"none", textAlign:"center" }}>
-              Log In
-            </Link>
-            <Link to="/signup" style={{ flex:1, background:"#1e3a8a", color:"white", border:"none", padding:"11px", borderRadius:"8px", fontWeight:"700", fontSize:"0.9rem", cursor:"pointer", textDecoration:"none", textAlign:"center" }}>
-              Sign Up
-            </Link>
+            {admin ? (
+              <button
+                onClick={() => {
+                  localStorage.removeItem("form_ease_admin");
+                  window.location.href = "/";
+                }}
+                style={{ flex:1, background:"#dc2626", color:"white", border:"none", padding:"11px", borderRadius:"8px", fontWeight:"700", fontSize:"0.9rem", cursor:"pointer" }}
+              >
+                Logout
+              </button>
+            ) : (
+              <>
+                <Link to="/login" style={{ flex:1, background:"transparent", color:"#1e3a8a", border:"1px solid #1e3a8a", padding:"11px", borderRadius:"8px", fontWeight:"700", fontSize:"0.9rem", cursor:"pointer", textDecoration:"none", textAlign:"center" }} onClick={() => setOpen(false)}>
+                  Log In
+                </Link>
+                <Link to="/signup" style={{ flex:1, background:"#1e3a8a", color:"white", border:"none", padding:"11px", borderRadius:"8px", fontWeight:"700", fontSize:"0.9rem", cursor:"pointer", textDecoration:"none", textAlign:"center" }} onClick={() => setOpen(false)}>
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

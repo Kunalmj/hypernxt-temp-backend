@@ -91,7 +91,7 @@ const Signup = () => {
 
           <button
             onClick={() => setStep(2)}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] mt-4 text-sm"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] mt-4 text-sm cursor-pointer"
           >
             Continue
           </button>
@@ -166,7 +166,7 @@ const Signup = () => {
             <button
               type="button"
               onClick={prevStep}
-              className="w-12 h-[46px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl transition-all flex items-center justify-center shrink-0"
+              className="w-12 h-[46px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer"
             >
               <svg
                 width="18"
@@ -184,7 +184,7 @@ const Signup = () => {
 
             <button
               type="submit"
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] text-sm"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] text-sm cursor-pointer"
             >
               Next Step
             </button>
@@ -253,7 +253,7 @@ const Signup = () => {
             <button
               type="button"
               onClick={prevStep}
-              className="w-12 h-[46px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl transition-all flex items-center justify-center shrink-0"
+              className="w-12 h-[46px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer"
             >
               <svg
                 width="18"
@@ -272,7 +272,7 @@ const Signup = () => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] disabled:opacity-50 text-sm"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] disabled:opacity-50 text-sm cursor-pointer"
             >
               {loading ? "Registering..." : "Complete Signup"}
             </button>

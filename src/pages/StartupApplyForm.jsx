@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { submitApplication } from "../utils/applicationsStore";
 
 const StartupApplyForm = () => {
   const navigate = useNavigate();
@@ -81,6 +82,16 @@ const StartupApplyForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    submitApplication({
+      id: `APP-STP-${Date.now().toString().slice(-4)}`,
+      applicantName: formData.founderName,
+      phone: formData.phone,
+      state: formData.state,
+      schemeName: grant?.title || "Startup India Seed Fund",
+      schemeType: "Startup",
+      status: "pending",
+      details: formData,
+    });
     setSubmitted(true);
   };
 
