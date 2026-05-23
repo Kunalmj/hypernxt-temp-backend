@@ -98,7 +98,7 @@ const AuthLayout = () => {
 
   return (
     <div 
-      className="min-h-screen relative flex items-center justify-center p-4 md:p-8 overflow-hidden bg-slate-950"
+      className="min-h-screen relative flex items-center justify-center p-4 md:p-4 overflow-hidden bg-slate-950"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <button
@@ -190,8 +190,8 @@ const AuthLayout = () => {
 
           {/* Form Content */}
           {/* <div className="flex-1 flex flex-col items-center justify-center px-8 lg:px-12 py-6 overflow-y-auto no-scrollbar"> */}
-          <div className="flex-1 flex flex-col items-center justify-center px-8 lg:px-12 py-6 overflow-hidden">
-            <div className="w-full max-w-[340px]">
+          <div className="flex-1 flex flex-col items-start justify-start px-8 lg:px-12 py-6 overflow-y-auto no-scrollbar">
+            <div className="w-full max-w-[340px] mx-auto my-auto py-4">
               <Outlet key={location.pathname} />
             </div>
           </div>
