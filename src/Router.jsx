@@ -43,6 +43,7 @@ import TransportSchemes from "./pages/TransportSchemes";
 import TravelSchemes from "./pages/TravelSchemes";
 import UtilitySchemes from "./pages/UtilitySchemes";
 import WomenChildSchemes from "./pages/WomenChildSchemes";
+import CitizenApplyForm from "./pages/CitizenApplyForm";
 import SchemeDetails from "./pages/SchemeDetails";
 import PricingPage from "./pages/PricingPage";
 import FAQPage from "./pages/faqPage";
@@ -101,6 +102,7 @@ const router = createBrowserRouter([
       { path: "citizen-schemes/utility", element: <UtilitySchemes /> },
       { path: "citizen-schemes/women", element: <WomenChildSchemes /> },
       { path: "scheme-details", element: <SchemeDetails /> },
+      { path: "citizen-apply", element: <CitizenApplyForm /> },
       { path: "price", element: <PricingPage /> },
       { path: "faq", element: <FAQPage /> },
       { path: "admin/dashboard", element: <AdminDashboard /> },

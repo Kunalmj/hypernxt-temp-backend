@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AssistanceModal from "./homepage/AssistanceModal";
 
 const themeStyles = {
   blue: {
@@ -47,6 +49,8 @@ const SchemeCard = ({
   setShowModal,
   colorTheme = "blue"
 }) => {
+  const navigate = useNavigate();
+  const [showAssistanceModal, setShowAssistanceModal] = useState(false);
   const t = themeStyles[colorTheme] || themeStyles.blue;
   const isExpanded = expandedId === scheme.id;
 
@@ -194,10 +198,7 @@ const SchemeCard = ({
         {/* Action Buttons */}
         <div className="flex flex-col gap-2 w-full">
           <button
-            onClick={() => {
-              setSelectedService(scheme.title);
-              setShowModal(true);
-            }}
+            onClick={() => navigate("/citizen-apply", { state: { scheme: scheme } })}
             className={`w-full inline-flex items-center justify-center gap-1.5 ${t.primaryBtn} text-white text-[0.8rem] font-bold rounded-xl px-4 py-2.5 border-none cursor-pointer transition-colors`}
             style={{ boxShadow: t.btnShadow }}
           >
@@ -334,17 +335,20 @@ const SchemeCard = ({
               <span className="font-medium break-all flex-1 min-w-0">{scheme.website || "https://www.myscheme.gov.in"}</span>
             </a>
             <button
-              onClick={() => {
-                setSelectedService(scheme.title);
-                setShowModal(true);
-              }}
-              className={`px-8 py-2.5 ${t.primaryBtn} text-white font-semibold rounded-lg transition-colors shadow-sm text-sm`}
+              onClick={() => setShowAssistanceModal(true)}
+              className={`px-8 py-2.5 ${t.primaryBtn} text-white font-semibold rounded-lg transition-colors shadow-sm text-sm border-none cursor-pointer`}
             >
-              Apply for this Scheme →
+              Get Assistance →
             </button>
           </div>
         </div>
       )}
+
+      <AssistanceModal
+        formName={scheme.title}
+        isOpen={showAssistanceModal}
+        onClose={() => setShowAssistanceModal(false)}
+      />
 
       {/* Embedded FadeIn Animation Styles */}
       <style>{`

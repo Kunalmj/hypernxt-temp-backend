@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { fetchCategory } from "../services/api";
 import { startupSchemes as mockGrants } from "../data/startupData";
 import RequestServiceModal from "../components/homepage/RequestServiceModal";
+import AssistanceModal from "../components/homepage/AssistanceModal";
 
 const StartupGrantResults = () => {
   const location = useLocation();
@@ -16,6 +17,8 @@ const StartupGrantResults = () => {
   const query = location.state?.query || null;
   const [showModal, setShowModal] = useState(false);
   const [selectedService, setSelectedService] = useState("");
+  const [showAssistanceModal, setShowAssistanceModal] = useState(false);
+  const [selectedAssistanceScheme, setSelectedAssistanceScheme] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -124,6 +127,11 @@ const StartupGrantResults = () => {
       onClose={() => setShowModal(false)}
     />
   )}
+  <AssistanceModal
+    formName={selectedAssistanceScheme}
+    isOpen={showAssistanceModal}
+    onClose={() => setShowAssistanceModal(false)}
+  />
     <div className="min-h-screen bg-[#f8fafc] font-sans pb-20">
       
       {/* Header section */}
@@ -311,11 +319,8 @@ const StartupGrantResults = () => {
 
               <div className="md:w-48 flex-shrink-0 flex flex-col gap-3">
                 <button 
-                  onClick={() => {
-                    setSelectedService(grant.title);
-                    setShowModal(true);
-                  }}
-                  className="w-full py-3 bg-blue-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                  onClick={() => navigate("/startup-apply", { state: { grant: grant } })}
+                  className="w-full py-3 bg-blue-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 text-center border-none cursor-pointer"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                   Apply Now
@@ -358,7 +363,11 @@ const StartupGrantResults = () => {
                     {grant.benefits && (
                       <div className="bg-white rounded-xl p-5 border border-slate-200">
                         <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </span>
                           Benefits & Funding
                         </h4>
                         <ul className="space-y-2">
@@ -376,7 +385,11 @@ const StartupGrantResults = () => {
                     {grant.documentsRequired && (
                       <div className="bg-white rounded-xl p-5 border border-slate-200">
                         <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </span>
                           Documents Required
                         </h4>
                         <ul className="space-y-2">
@@ -393,7 +406,11 @@ const StartupGrantResults = () => {
                     {/* Selection Process */}
                     <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                       <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                        <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                          </svg>
+                        </span>
                         Selection Process
                       </h4>
                       <p className="text-sm text-slate-600 leading-relaxed">{grant.selectionProcess || "Screening -> Pitch -> Approval"}</p>
@@ -408,7 +425,11 @@ const StartupGrantResults = () => {
                     {/* Important Dates & Contact */}
                     <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                       <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                        <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </span>
                         Important Dates & Contact
                       </h4>
                       {grant.importantDates && (
@@ -454,12 +475,12 @@ const StartupGrantResults = () => {
                     </a>
                     <button
                       onClick={() => {
-                        setSelectedService(grant.title);
-                        setShowModal(true);
+                        setSelectedAssistanceScheme(grant.title);
+                        setShowAssistanceModal(true);
                       }}
-                      className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm text-sm"
+                      className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm text-sm cursor-pointer border-none"
                     >
-                      Apply for this Grant →
+                      Get Assistance →
                     </button>
                   </div>
 
