@@ -347,10 +347,10 @@ const SchemeDetails = () => {
 
               <div className="space-y-3 pt-2">
                 <button 
-                  onClick={() => setShowApplyModal(true)}
-                  className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-md shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all active:scale-95"
+                  onClick={() => navigate("/citizen-apply", { state: { scheme: scheme } })}
+                  className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-md shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all active:scale-95 text-center flex items-center justify-center gap-1.5"
                 >
-                  Apply Now Online
+                  Apply Now
                 </button>
                 {scheme.website && scheme.website !== "#" && (
                   <a 

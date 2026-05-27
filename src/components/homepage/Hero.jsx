@@ -84,7 +84,7 @@ const Hero = ({ query, setQuery }) => {
               className="flex-1 border-none outline-none px-3 py-3.5 md:py-4 text-sm md:text-[0.9rem] text-[#1e293b] bg-transparent" 
             />
             <button
-              className="bg-[#1d4ed8] text-white border-none px-6 md:px-8 py-3.5 md:py-4 font-bold text-sm cursor-pointer transition-colors hover:bg-[#1e40af] whitespace-nowrap"
+              className="bg-[#1d4ed8] text-white border-none px-6 md:px-8 font-bold text-sm cursor-pointer transition-colors hover:bg-[#1e40af] whitespace-nowrap self-stretch flex items-center justify-center ml-[-1px]"
             >Search</button>
           </div>
 

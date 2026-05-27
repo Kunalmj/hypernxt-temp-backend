@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { fetchCategory } from "../services/api";
 import { tenders as mockTenders } from "../data/tenderData";
 import RequestServiceModal from "../components/homepage/RequestServiceModal";
+import AssistanceModal from "../components/homepage/AssistanceModal";
 
 const TenderResults = () => {
   const { state } = useLocation();
@@ -15,6 +16,8 @@ const TenderResults = () => {
   const [expandedId, setExpandedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedService, setSelectedService] = useState("");
+  const [showAssistanceModal, setShowAssistanceModal] = useState(false);
+  const [selectedAssistanceScheme, setSelectedAssistanceScheme] = useState("");
 
   const query = state?.query || null;
 
@@ -104,6 +107,11 @@ const TenderResults = () => {
       onClose={() => setShowModal(false)}
     />
   )}
+  <AssistanceModal
+    formName={selectedAssistanceScheme}
+    isOpen={showAssistanceModal}
+    onClose={() => setShowAssistanceModal(false)}
+  />
     <div className="min-h-screen bg-[#f8fafc] font-sans pb-20">
       {/* Header */}
       {/* <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white pt-20 pb-16 px-6"> */}
@@ -285,18 +293,14 @@ const TenderResults = () => {
                     </a>
                   </div>
                 )}
-              </div>
+               </div>
 
               <div className="md:w-48 flex-shrink-0 flex flex-col gap-3">
-                <button
-                  // onClick={() => navigate("/tender-apply", { state: { tender: t } })}
-                  onClick={() => {
-  setSelectedService(t.title);
-  setShowModal(true);
-}}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm"
+                <button 
+                  onClick={() => navigate("/tender-apply", { state: { tender: t } })}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm text-center flex items-center justify-center border-none cursor-pointer"
                 >
-                  Bid Now
+                  Apply Now
                 </button>
                 <button
                   onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
@@ -336,7 +340,11 @@ const TenderResults = () => {
                     {t.scopeOfWork && (
                       <div className="bg-white rounded-xl p-5 border border-slate-200 md:col-span-2">
                         <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          </span>
                           Scope of Work
                         </h4>
                         <p className="text-sm text-slate-600 leading-relaxed">{t.scopeOfWork}</p>
@@ -347,7 +355,11 @@ const TenderResults = () => {
                     {t.eligibility && (
                       <div className="bg-white rounded-xl p-5 border border-slate-200">
                         <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                            </svg>
+                          </span>
                           Eligibility Criteria
                         </h4>
                         <ul className="space-y-2">
@@ -365,7 +377,11 @@ const TenderResults = () => {
                     {t.documentsRequired && (
                       <div className="bg-white rounded-xl p-5 border border-slate-200">
                         <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </span>
                           Documents Required
                         </h4>
                         <ul className="space-y-2">
@@ -383,7 +399,11 @@ const TenderResults = () => {
                     {t.importantDates && (
                       <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                         <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </span>
                           Key Dates
                         </h4>
                         <div className="grid grid-cols-2 gap-3">
@@ -411,7 +431,11 @@ const TenderResults = () => {
                     {t.contact && (
                       <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                         <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs"></span>
+                          <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                          </span>
                           Contact & Portal
                         </h4>
                         <div className="space-y-2">
@@ -439,14 +463,13 @@ const TenderResults = () => {
                       <span className="font-medium break-all flex-1 min-w-0">{t.website || "Official tender portal"}</span>
                     </a>
                     <button
-                      // onClick={() => navigate("/tender-apply", { state: { tender: t } })}
                       onClick={() => {
-  setSelectedService(t.title);
-  setShowModal(true);
-}}
-                      className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm text-sm"
+                        setSelectedAssistanceScheme(t.title);
+                        setShowAssistanceModal(true);
+                      }}
+                      className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm text-sm cursor-pointer border-none"
                     >
-                      Submit Bid for this Tender →
+                      Get Assistance →
                     </button>
                   </div>
 
