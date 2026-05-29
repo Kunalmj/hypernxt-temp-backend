@@ -57,27 +57,6 @@ const Login = () => {
         </p>
       </div>
 
-      {/* Mode Selection Tab */}
-      <div className="flex bg-slate-100 p-1.5 rounded-xl mb-6">
-        <button
-          type="button"
-          onClick={() => setIsAdmin(false)}
-          className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
-            !isAdmin ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          Citizen
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsAdmin(true)}
-          className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
-            isAdmin ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          Admin
-        </button>
-      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 text-left">
         <div className="space-y-4">

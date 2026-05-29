@@ -47,7 +47,7 @@ import CitizenApplyForm from "./pages/CitizenApplyForm";
 import SchemeDetails from "./pages/SchemeDetails";
 import PricingPage from "./pages/PricingPage";
 import FAQPage from "./pages/faqPage";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "@admin/AdminDashboard";
 
 const router = createBrowserRouter([
   {
