@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { submitApplication } from "../utils/applicationsStore";
 import { indianStates } from "../utils/states";
+import { createRequestService } from "../services/api";
 
 const ResearchApplyForm = () => {
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ const ResearchApplyForm = () => {
     { id: 3, label: "Upload & Submit" },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     submitApplication({
       id: `APP-RES-${Date.now().toString().slice(-4)}`,
@@ -85,6 +86,19 @@ const ResearchApplyForm = () => {
       status: "pending",
       details: formData,
     });
+    try {
+      await createRequestService({
+        fullName: formData.investigatorName,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        selectedService: grant?.title || "Research Grant Application",
+        description: formData.summary || "Research grant application submitted.",
+        contactMethod: "Email",
+        subject: `Research Grant Application: ${grant?.title || "Grant"}`,
+      });
+    } catch (err) {
+      console.error("API request-service failed:", err);
+    }
     setSubmitted(true);
   };
 

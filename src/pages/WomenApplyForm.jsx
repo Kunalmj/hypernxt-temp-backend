@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { submitApplication } from "../utils/applicationsStore";
+import { createRequestService } from "../services/api";
 
 const WomenApplyForm = () => {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ const WomenApplyForm = () => {
     { id: 3, label: "Statement & Docs" },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     submitApplication({
       id: `APP-WMN-${Date.now().toString().slice(-4)}`,
@@ -83,6 +84,19 @@ const WomenApplyForm = () => {
       status: "pending",
       details: formData,
     });
+    try {
+      await createRequestService({
+        fullName: formData.fullName,
+        email: formData.email || "",
+        phoneNumber: formData.phone,
+        selectedService: program?.title || "Women Program Support",
+        description: formData.briefNeed || "Women program application submitted.",
+        contactMethod: "Email",
+        subject: `Women Program Application: ${program?.title || "Program"}`,
+      });
+    } catch (err) {
+      console.error("API request-service failed:", err);
+    }
     setSubmitted(true);
   };
 

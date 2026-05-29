@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { submitApplication } from "../utils/applicationsStore";
+import { createRequestService } from "../services/api";
 
 const AgriApplyForm = () => {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ const AgriApplyForm = () => {
     { id: 3, label: "Documents" },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     submitApplication({
       id: `APP-AGR-${Date.now().toString().slice(-4)}`,
@@ -83,6 +84,19 @@ const AgriApplyForm = () => {
       status: "pending",
       details: formData,
     });
+    try {
+      await createRequestService({
+        fullName: formData.farmerName,
+        email: "",
+        phoneNumber: formData.phone,
+        selectedService: scheme?.title || "Agriculture Scheme Support",
+        description: `Agriculture scheme application. Crop: ${formData.cropType || "N/A"}, Land: ${formData.landSize || "N/A"} hectares.`,
+        contactMethod: "Phone",
+        subject: `Agriculture Application: ${scheme?.title || "Scheme"}`,
+      });
+    } catch (err) {
+      console.error("API request-service failed:", err);
+    }
     setSubmitted(true);
   };
 

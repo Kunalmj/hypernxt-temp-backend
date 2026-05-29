@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { submitApplication } from "../utils/applicationsStore";
+import { createRequestService } from "../services/api";
 
 const TenderApplyForm = () => {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ const TenderApplyForm = () => {
     { id: 3, label: "Documents & EMD" },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     submitApplication({
       id: `APP-TND-${Date.now().toString().slice(-4)}`,
@@ -86,6 +87,19 @@ const TenderApplyForm = () => {
       status: "pending",
       details: formData,
     });
+    try {
+      await createRequestService({
+        fullName: formData.contactPerson || formData.companyName,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        selectedService: tender?.title || "Tender Bid Application",
+        description: `Tender bid by ${formData.companyName}. Experience: ${formData.yearsExperience || "N/A"} years.`,
+        contactMethod: "Email",
+        subject: `Tender Bid: ${tender?.title || "Tender"}`,
+      });
+    } catch (err) {
+      console.error("API request-service failed:", err);
+    }
     setSubmitted(true);
   };
 

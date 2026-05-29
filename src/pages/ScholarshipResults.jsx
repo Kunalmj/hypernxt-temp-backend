@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { fetchCategory } from "../services/api";
 import RequestServiceModal from "../components/homepage/RequestServiceModal";
 import AssistanceModal from "../components/homepage/AssistanceModal";
-import { scholarships as mockScholarships } from "../data/scholarshipData";
 
 
 const ScholarshipResults = () => {
@@ -93,10 +92,8 @@ const ScholarshipResults = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to fetch scholarships, falling back to local database:", err);
-        setSchemes(mockScholarships);
-        setUsingFallback(true);
-        setError(null);
+        console.error("Failed to fetch scholarships:", err);
+        setError(err);
         setLoading(false);
       });
   // retryCount in dep array triggers re-fetch on auto-retry

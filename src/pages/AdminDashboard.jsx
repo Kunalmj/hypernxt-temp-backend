@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getApplicationsByLocation, updateApplicationStatus } from "../utils/applicationsStore";
+import { getRequestServices } from "../services/api";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState(null);
-  const [applications, setApplications] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [liveRequests, setLiveRequests] = useState([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveError, setLiveError] = useState(null);
+  const [liveStatuses, setLiveStatuses] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("form_ease_live_statuses") || "{}");
+    } catch {
+      return {};
+    }
+  });
 
   // Authenticate admin on load
   useEffect(() => {
@@ -19,8 +28,23 @@ const AdminDashboard = () => {
     }
     const adminData = JSON.parse(adminSession);
     setAdmin(adminData);
-    setApplications(getApplicationsByLocation(adminData.location));
+    fetchLiveRequests();
   }, [navigate]);
+
+  const fetchLiveRequests = () => {
+    setLiveLoading(true);
+    setLiveError(null);
+    getRequestServices()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : (data?.results || []);
+        setLiveRequests(list);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch live requests:", err);
+        setLiveError("Could not reach the database. The server may be sleeping — try again in a moment.");
+      })
+      .finally(() => setLiveLoading(false));
+  };
 
   if (!admin) {
     return (
@@ -30,39 +54,54 @@ const AdminDashboard = () => {
     );
   }
 
-  const handleStatusChange = (appId, newStatus) => {
-    updateApplicationStatus(appId, newStatus);
-    // Refresh list
-    setApplications(getApplicationsByLocation(admin.location));
+  const getRequestKey = (req) => {
+    return req.id || `${req.fullName || req.full_name}-${req.selectedService || req.selected_service}`;
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("form_ease_admin");
-    window.location.href = "/";
+  const getRequestStatus = (req) => {
+    const key = getRequestKey(req);
+    return liveStatuses[key] || "pending";
   };
 
-  // Filtered applications
-  const filteredApps = applications.filter((app) => {
-    const matchesTab = activeTab === "all" || app.status === activeTab;
-    const query = searchQuery.toLowerCase().trim();
-    const matchesSearch = !query ||
-      app.applicantName.toLowerCase().includes(query) ||
-      app.id.toLowerCase().includes(query) ||
-      app.schemeName.toLowerCase().includes(query) ||
-      app.schemeType.toLowerCase().includes(query);
-    return matchesTab && matchesSearch;
-  });
-
-  // Calculate Stats
-  const stats = {
-    total: applications.length,
-    pending: applications.filter((a) => a.status === "pending").length,
-    resolved: applications.filter((a) => a.status === "resolved").length,
-    rejected: applications.filter((a) => a.status === "rejected").length,
+  const handleStatusChange = (req, newStatus) => {
+    const key = getRequestKey(req);
+    const updated = { ...liveStatuses, [key]: newStatus };
+    setLiveStatuses(updated);
+    localStorage.setItem("form_ease_live_statuses", JSON.stringify(updated));
   };
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  // Filtered requests based on tab and search
+  const filteredRequests = liveRequests.filter((req) => {
+    const status = getRequestStatus(req);
+    const matchesTab = activeTab === "all" || status === activeTab;
+    const query = searchQuery.toLowerCase().trim();
+    
+    const name = String(req.fullName || req.full_name || "").toLowerCase();
+    const id = String(req.id || "").toLowerCase();
+    const service = String(req.selectedService || req.selected_service || "").toLowerCase();
+    const email = String(req.email || "").toLowerCase();
+    const phone = String(req.phoneNumber || req.phone_number || "").toLowerCase();
+    
+    const matchesSearch = !query ||
+      name.includes(query) ||
+      id.includes(query) ||
+      service.includes(query) ||
+      email.includes(query) ||
+      phone.includes(query);
+      
+    return matchesTab && matchesSearch;
+  });
+
+  // Calculate Stats based on DB submissions
+  const stats = {
+    total: liveRequests.length,
+    pending: liveRequests.filter((r) => getRequestStatus(r) === "pending").length,
+    resolved: liveRequests.filter((r) => getRequestStatus(r) === "resolved").length,
+    rejected: liveRequests.filter((r) => getRequestStatus(r) === "rejected").length,
   };
 
   return (
@@ -83,38 +122,51 @@ const AdminDashboard = () => {
               Welcome, {admin.username}
             </h1>
             <p className="text-slate-400 text-sm mt-1">
-              Manage scheme applications, review citizen details, and resolve queries for {admin.location} state.
+              Manage real-time database scheme and service applications for {admin.location} state.
             </p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-5 py-2 border border-slate-700 hover:bg-slate-800 text-slate-300 font-semibold rounded-lg transition-all text-xs cursor-pointer"
-          >
-            Logout Session
-          </button>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 mt-10">
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Total Applications" value={stats.total} type="total" />
+          <StatCard title="Total Submissions" value={stats.total} type="total" />
           <StatCard title="Pending Review" value={stats.pending} type="pending" />
           <StatCard title="Resolved" value={stats.resolved} type="resolved" />
           <StatCard title="Rejected" value={stats.rejected} type="rejected" />
         </div>
 
-        {/* Tab Controls & List Header */}
+        {/* Controls & List Header */}
         <div className="mt-10 bg-white rounded-2xl shadow-xs border border-slate-200/60 overflow-hidden">
           <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-              <h2 className="text-base font-semibold text-slate-800 shrink-0">
-                Applications Registry ({filteredApps.length})
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-base font-semibold text-slate-800 shrink-0">
+                  Submissions Registry ({filteredRequests.length})
+                </h2>
+                <button
+                  onClick={fetchLiveRequests}
+                  disabled={liveLoading}
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-bold rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {liveLoading ? (
+                    <svg className="animate-spin w-3 h-3 text-blue-700" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3 h-3 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  )}
+                  Refresh DB
+                </button>
+              </div>
               <div className="relative flex-1 max-w-md">
                 <input
                   type="text"
-                  placeholder="Search applicant name, ID, or scheme..."
+                  placeholder="Search applicant name, ID, service, email, or phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:border-slate-400 outline-none transition-all placeholder:text-slate-400 text-slate-700 font-medium"
@@ -143,51 +195,73 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Applications List */}
-          {filteredApps.length === 0 ? (
+          {/* Submissions List */}
+          {liveLoading && liveRequests.length === 0 ? (
+            <div className="p-16 text-center flex flex-col items-center gap-3">
+              <svg className="animate-spin h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              <p className="text-slate-500 text-sm font-medium">Fetching database submissions…</p>
+            </div>
+          ) : liveError ? (
+            <div className="p-16 text-center">
+              <p className="text-red-500 font-semibold text-sm">{liveError}</p>
+              <button
+                onClick={fetchLiveRequests}
+                className="mt-4 px-5 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors"
+              >
+                Retry Fetching
+              </button>
+            </div>
+          ) : filteredRequests.length === 0 ? (
             <div className="p-16 text-center text-slate-400">
               <svg className="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5M3.75 5.25h16.5m-16.5 13.5h16.5" />
               </svg>
-              <p className="font-semibold text-sm text-slate-600">No applications found matching this status.</p>
-              <p className="text-[11px] text-slate-400 mt-1">New citizen submissions will appear here automatically.</p>
+              <p className="font-semibold text-sm text-slate-600">No submissions found matching this status.</p>
+              <p className="text-[11px] text-slate-400 mt-1">Real-time citizen requests will appear here automatically.</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
-              {filteredApps.map((app) => {
-                const isExpanded = expandedId === app.id;
+              {filteredRequests.map((req, idx) => {
+                const reqId = req.id || `REQ-DB-${idx + 1}`;
+                const isExpanded = expandedId === reqId;
+                const status = getRequestStatus(req);
+                const dateStr = req.date || (req.created_at ? new Date(req.created_at).toLocaleDateString() : "2026-05-29");
+
                 return (
-                  <div key={app.id} className="transition-all hover:bg-slate-50/20">
+                  <div key={reqId} className="transition-all hover:bg-slate-50/20">
                     {/* Collapsed View / Row Header */}
                     <div
-                      onClick={() => toggleExpand(app.id)}
+                      onClick={() => toggleExpand(reqId)}
                       className="px-6 py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2.5">
                           <span className="text-sm font-semibold text-slate-800">
-                            {app.applicantName}
+                            {req.fullName || req.full_name || "Anonymous Applicant"}
                           </span>
                           <span className="text-xs text-slate-400 font-mono">
-                            {app.id}
+                            {reqId}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md uppercase tracking-wider">
-                            {app.schemeType}
+                            Service Request
                           </span>
-                          <span className="text-xs text-slate-500">
-                            {app.schemeName}
+                          <span className="text-xs text-slate-500 font-semibold text-blue-700 bg-blue-50/50 px-2.5 py-0.5 rounded-md">
+                            {req.selectedService || req.selected_service || "General Service"}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between md:justify-end gap-6">
                         <span className="text-xs text-slate-400">
-                          Submitted: {app.date}
+                          Submitted: {dateStr}
                         </span>
                         <div className="flex items-center gap-3">
-                          <StatusBadge status={app.status} />
+                          <StatusBadge status={status} />
                           <svg
                             className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${
                               isExpanded ? "rotate-180" : ""
@@ -212,14 +286,15 @@ const AdminDashboard = () => {
                               Personal & Contact Information
                             </h3>
                             <div className="space-y-3 text-xs">
-                              <DetailItem label="Applicant Name" value={app.applicantName} />
-                              <DetailItem label="Mobile Number" value={app.phone || app.details?.phone} />
-                              <DetailItem label="Aadhaar Number" value={app.details?.aadhaar} />
-                              <DetailItem label="Email" value={app.details?.email || "N/A"} />
-                              <DetailItem label="Date of Birth" value={app.details?.dob} />
-                              <DetailItem label="Gender" value={app.details?.gender} />
-                              <DetailItem label="City" value={app.details?.city || app.details?.village || "N/A"} />
-                              <DetailItem label="State" value={app.state || app.details?.state || app.details?.stateField} />
+                              <DetailItem label="Applicant Name" value={req.fullName || req.full_name} />
+                              <DetailItem label="Mobile Number" value={req.phoneNumber || req.phone_number} />
+                              <DetailItem label="Email" value={req.email} />
+                              <DetailItem label="Contact Preference" value={req.contactMethod || req.contact_method} />
+                              <DetailItem label="Aadhaar Number" value="N/A" />
+                              <DetailItem label="Date of Birth" value="N/A" />
+                              <DetailItem label="Gender" value="N/A" />
+                              <DetailItem label="City" value="N/A" />
+                              <DetailItem label="State" value={admin.location} />
                             </div>
                           </div>
 
@@ -229,60 +304,14 @@ const AdminDashboard = () => {
                               Technical & Financial Data
                             </h3>
                             <div className="space-y-3 text-xs">
-                              {/* Render specific fields dynamically based on app category */}
-                              {app.schemeType === "Agriculture" && (
-                                <>
-                                  <DetailItem label="Land Size (Hectares)" value={app.details?.landSize} />
-                                  <DetailItem label="Khasra/Khatauni No" value={app.details?.khasraNo} />
-                                  <DetailItem label="Irrigation Type" value={app.details?.irrigationType} />
-                                  <DetailItem label="Primary Crop Type" value={app.details?.cropType} />
-                                </>
-                              )}
-                              {app.schemeType === "Scholarship" && (
-                                <>
-                                  <DetailItem label="Institution" value={app.details?.institution} />
-                                  <DetailItem label="Course / Year" value={`${app.details?.course} (${app.details?.yearOfStudy})`} />
-                                  <DetailItem label="Academic Record" value={`CGPA: ${app.details?.cgpa} / Class 12: ${app.details?.class12Percent}`} />
-                                  <DetailItem label="Annual Family Income" value={app.details?.familyIncome} />
-                                </>
-                              )}
-                              {app.schemeType === "Startup" && (
-                                <>
-                                  <DetailItem label="Startup Name" value={app.details?.startupName} />
-                                  <DetailItem label="Reg No / DPIIT" value={`${app.details?.registrationNumber || "N/A"} / ${app.details?.dpiitNumber || "N/A"}`} />
-                                  <DetailItem label="Sector / Stage" value={`${app.details?.sector} / ${app.details?.stage}`} />
-                                  <DetailItem label="ARR / Funding" value={`${app.details?.arr} / ${app.details?.fundingRaised}`} />
-                                </>
-                              )}
-                              {app.schemeType === "Women Programs" && (
-                                <>
-                                  <DetailItem label="Education Completed" value={app.details?.education} />
-                                  <DetailItem label="Marital Status" value={app.details?.maritalStatus} />
-                                  <DetailItem label="Address" value={app.details?.address} />
-                                </>
-                              )}
-                              {app.schemeType === "Tenders" && (
-                                <>
-                                  <DetailItem label="Company Name" value={app.details?.companyName} />
-                                  <DetailItem label="Reg No / GST / PAN" value={`${app.details?.registrationNo} / ${app.details?.gst} / ${app.details?.pan}`} />
-                                  <DetailItem label="Contact Person" value={`${app.details?.contactPerson} (${app.details?.designation})`} />
-                                  <DetailItem label="Turnover / Experience" value={`${app.details?.annualTurnover} / ${app.details?.yearsExperience} years`} />
-                                </>
-                              )}
-                              {app.schemeType === "Research Grants" && (
-                                <>
-                                  <DetailItem label="Investigator Name" value={app.details?.investigatorName} />
-                                  <DetailItem label="Designation" value={app.details?.designation} />
-                                  <DetailItem label="Dept / Institute" value={`${app.details?.department} / ${app.details?.institution}`} />
-                                  <DetailItem label="Research Area" value={app.details?.researchArea} />
-                                  <DetailItem label="Budget Requested" value={`₹ ${app.details?.budget}`} />
-                                </>
-                              )}
+                              <DetailItem label="Selected Service" value={req.selectedService || req.selected_service} />
+                              <DetailItem label="Subject" value={req.subject} />
+                              <DetailItem label="Contact Method" value={req.contactMethod || req.contact_method} />
                               <hr className="my-2 border-slate-100" />
                               <h4 className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Bank Transfer details (DBT)</h4>
-                              <DetailItem label="Bank Name" value={app.details?.bankName || "N/A"} />
-                              <DetailItem label="Account No" value={app.details?.accountNo || "N/A"} />
-                              <DetailItem label="IFSC Code" value={app.details?.ifsc || "N/A"} />
+                              <DetailItem label="Bank Name" value="N/A" />
+                              <DetailItem label="Account No" value="N/A" />
+                              <DetailItem label="IFSC Code" value="N/A" />
                             </div>
                           </div>
 
@@ -292,8 +321,8 @@ const AdminDashboard = () => {
                               <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">
                                 Statement of Purpose / Description
                               </h3>
-                              <p className="text-slate-600 text-xs leading-relaxed italic bg-slate-50 p-3 rounded-lg border border-slate-100 max-h-[150px] overflow-y-auto">
-                                "{app.details?.essay || app.details?.briefNeed || app.details?.pitch || app.details?.summary || app.details?.similarWorks || "No statement provided."}"
+                              <p className="text-slate-600 text-xs leading-relaxed italic bg-slate-50 p-3 rounded-lg border border-slate-100 max-h-[150px] overflow-y-auto font-medium">
+                                "{req.description || "No description provided."}"
                               </p>
                             </div>
 
@@ -303,19 +332,19 @@ const AdminDashboard = () => {
                               </h4>
                               <div className="flex gap-2">
                                 <button
-                                  onClick={() => handleStatusChange(app.id, "resolved")}
+                                  onClick={() => handleStatusChange(req, "resolved")}
                                   className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg text-xs transition-colors cursor-pointer"
                                 >
                                   Resolve
                                 </button>
                                 <button
-                                  onClick={() => handleStatusChange(app.id, "rejected")}
+                                  onClick={() => handleStatusChange(req, "rejected")}
                                   className="flex-1 bg-white hover:bg-rose-50/50 text-rose-600 border border-rose-100 font-semibold py-2 rounded-lg text-xs transition-colors cursor-pointer"
                                 >
                                   Reject
                                 </button>
                                 <button
-                                  onClick={() => handleStatusChange(app.id, "pending")}
+                                  onClick={() => handleStatusChange(req, "pending")}
                                   className="flex-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-semibold py-2 rounded-lg text-xs transition-colors cursor-pointer"
                                 >
                                   Pend

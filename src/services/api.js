@@ -1,9 +1,17 @@
-// In development: requests go to Vite's proxy at /gov-scraper/* which forwards
-// server-side to gov-data-scraper.onrender.com — this bypasses the browser CORS restriction.
-// In production: use the full URL (requires backend to have CORS enabled for your domain).
-const BASE_URL = import.meta.env.PROD
-  ? "https://gov-data-scraper.onrender.com"
-  : "/gov-scraper";
+// Base URL is read from .env (VITE_API_BASE_URL / VITE_DEV_PROXY_PATH).
+// In development Vite proxies VITE_DEV_PROXY_PATH/* → VITE_API_BASE_URL/*
+// so the browser never hits the remote origin directly (avoids CORS).
+const PROD_URL = import.meta.env.VITE_API_BASE_URL;
+const DEV_PATH = import.meta.env.VITE_DEV_PROXY_PATH;
+
+if (!PROD_URL) {
+  console.error("VITE_API_BASE_URL is not defined in the environment configuration!");
+}
+if (!DEV_PATH) {
+  console.error("VITE_DEV_PROXY_PATH is not defined in the environment configuration!");
+}
+
+const BASE_URL = import.meta.env.PROD ? PROD_URL : DEV_PATH;
 
 /**
  * Fetch with an AbortController timeout.
@@ -39,3 +47,32 @@ export const fetchCards = (category) =>
   fetchWithRetry(`${BASE_URL}/api/cards/${category}`);
 
 export const fetchCategory = fetchCards;
+
+/**
+ * POST a new service request to the backend.
+ * All data is sent as query parameters as required by the API.
+ * @param {{ fullName, email, phoneNumber, selectedService, description, contactMethod, subject }} data
+ */
+export const createRequestService = (data) => {
+  const params = new URLSearchParams({
+    fullName: data.fullName || "",
+    email: data.email || "",
+    phoneNumber: data.phoneNumber || "",
+    selectedService: data.selectedService || "",
+    description: data.description || "",
+    contactMethod: data.contactMethod || "Email",
+    subject: data.subject || "Service request",
+  });
+  return fetch(`${BASE_URL}/api/request-service/create/?${params.toString()}`, {
+    method: "POST",
+  }).then((res) => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json().catch(() => ({}));
+  });
+};
+
+/**
+ * GET all submitted service requests.
+ */
+export const getRequestServices = () =>
+  fetchWithRetry(`${BASE_URL}/api/request-services/list/`);

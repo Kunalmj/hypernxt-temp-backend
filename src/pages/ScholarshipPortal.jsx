@@ -70,7 +70,7 @@ const ScholarshipPortal = () => {
     setTimeout(() => {
       setIsLoading(false);
       navigate("/scholarship-results", { state: { query: data } });
-    }, 1500);
+    }, 500);
   };
 
   const regionOptions = data.type === "International"

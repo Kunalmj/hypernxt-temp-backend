@@ -6,6 +6,15 @@ function Navbar() {
   const location = useLocation();
   const [bottomOffset, setBottomOffset] = useState(24);
   const [admin, setAdmin] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClose = () => setDropdownOpen(false);
+    window.addEventListener("click", handleClose);
+    return () => window.removeEventListener("click", handleClose);
+  }, [dropdownOpen]);
 
   useEffect(() => {
     const session = localStorage.getItem("form_ease_admin");
@@ -92,8 +101,7 @@ function Navbar() {
             { to: "/", label: "Home", end: true },
             { to: "/about", label: "About Us" },
             { to: "/browse-all", label: "Services" },
-             { to: "/price", label: "Price" },
-             ...(admin ? [{ to: "/admin/dashboard", label: "Admin Dashboard" }] : []),
+            { to: "/price", label: "Price" },
           ].map((link) => (
             <NavLink
               key={link.to}
@@ -117,20 +125,125 @@ function Navbar() {
         {/* RIGHT SIDE */}
         <div style={{ display:"flex", alignItems:"center", gap:"12px" }} className="hide-mobile">
           {admin ? (
-            <>
-              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "#475569", border: "1px solid #e2e8f0", padding: "8px 16px", borderRadius: "9999px", background: "#f8fafc" }}>
-                {admin.username} ({admin.location})
-              </div>
+            <div style={{ position: "relative" }}>
               <button
-                onClick={() => {
-                  localStorage.removeItem("form_ease_admin");
-                  window.location.href = "/";
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen(!dropdownOpen);
                 }}
-                style={{ background: "#dc2626", color: "white", border: "none", padding: "10px 24px", borderRadius: "9999px", fontSize: "0.875rem", fontWeight: "700", cursor: "pointer", transition: "background 0.2s" }}
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "700",
+                  color: "#1e3a8a",
+                  border: "1px solid rgba(191,219,254,0.6)",
+                  padding: "8px 18px",
+                  borderRadius: "9999px",
+                  background: "#f0f7ff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#e0effe";
+                  e.currentTarget.style.borderColor = "rgba(147,197,253,0.8)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#f0f7ff";
+                  e.currentTarget.style.borderColor = "rgba(191,219,254,0.6)";
+                }}
               >
-                Logout
+                <span>{admin.username} ({admin.location})</span>
+                <svg
+                  style={{
+                    width: "12px",
+                    height: "12px",
+                    transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s",
+                  }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-            </>
+
+              {dropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "45px",
+                    right: 0,
+                    background: "white",
+                    border: "1px solid rgba(226, 232, 240, 0.8)",
+                    borderRadius: "16px",
+                    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+                    width: "180px",
+                    padding: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                    zIndex: 100,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Link
+                    to="/admin/dashboard"
+                    onClick={() => setDropdownOpen(false)}
+                    style={{
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      color: "#334155",
+                      textDecoration: "none",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      display: "block",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#f1f5f9";
+                      e.currentTarget.style.color = "#1e3a8a";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "#334155";
+                    }}
+                  >
+                    Admin Dashboard
+                  </Link>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem("form_ease_admin");
+                      window.location.href = "/";
+                    }}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      color: "#dc2626",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      width: "100%",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#fef2f2";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    Logout Session
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               {/* Log In */}

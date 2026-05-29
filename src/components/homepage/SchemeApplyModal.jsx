@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createRequestService } from "../../services/api";
 
 const SchemeApplyModal = ({ schemeName, onClose }) => {
   const [form, setForm] = useState({
@@ -10,13 +11,30 @@ const SchemeApplyModal = ({ schemeName, onClose }) => {
     contactMethod: "Email",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(onClose, 2500);
+    setSubmitting(true);
+    try {
+      await createRequestService({
+        fullName: form.name,
+        email: form.email,
+        phoneNumber: form.phone,
+        selectedService: schemeName || form.scheme,
+        description: form.description,
+        contactMethod: form.contactMethod,
+        subject: `Scheme Application: ${schemeName}`,
+      });
+    } catch (err) {
+      console.error("Failed to submit scheme application:", err);
+    } finally {
+      setSubmitting(false);
+      setSubmitted(true);
+      setTimeout(onClose, 2500);
+    }
   };
 
   const handleBackdrop = (e) => {
@@ -123,8 +141,9 @@ const SchemeApplyModal = ({ schemeName, onClose }) => {
                 className="flex-1 py-3 rounded-xl border-2 border-[#f1f5f9] text-[#475569] font-bold text-[0.85rem] bg-white hover:bg-[#f8fafc] transition-colors cursor-pointer"
               >Discard</button>
               <button type="submit"
-                className="flex-1 py-3 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-[0.85rem] transition-all cursor-pointer shadow-lg shadow-blue-200 active:scale-95"
-              >Submit Application →</button>
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-[0.85rem] transition-all cursor-pointer shadow-lg shadow-blue-200 active:scale-95 disabled:opacity-60"
+              >{submitting ? "Submitting…" : "Submit Application →"}</button>
             </div>
           </form>
         )}

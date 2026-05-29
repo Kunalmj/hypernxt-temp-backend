@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { submitApplication } from "../utils/applicationsStore";
+import { createRequestService } from "../services/api";
 
 const StartupApplyForm = () => {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ const StartupApplyForm = () => {
     { id: 3, label: "Pitch & Docs" },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     submitApplication({
       id: `APP-STP-${Date.now().toString().slice(-4)}`,
@@ -92,6 +93,19 @@ const StartupApplyForm = () => {
       status: "pending",
       details: formData,
     });
+    try {
+      await createRequestService({
+        fullName: formData.founderName,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        selectedService: grant?.title || "Startup Grant Application",
+        description: formData.pitch || "Startup grant application submitted.",
+        contactMethod: "Email",
+        subject: `Startup Grant Application: ${grant?.title || "Grant"}`,
+      });
+    } catch (err) {
+      console.error("API request-service failed:", err);
+    }
     setSubmitted(true);
   };
 

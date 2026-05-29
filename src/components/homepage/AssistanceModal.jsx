@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
+import { createRequestService } from "../../services/api";
 
 const AssistanceModal = ({ formName, isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const AssistanceModal = ({ formName, isOpen, onClose }) => {
     issueDescription: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -16,19 +18,35 @@ const AssistanceModal = ({ formName, isOpen, onClose }) => {
     setFormData((prev) => ({ ...prev, [key]: val }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        issueDescription: "",
+    setSubmitting(true);
+    try {
+      await createRequestService({
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        phoneNumber: "",
+        selectedService: formName || "Application Assistance",
+        description: formData.issueDescription,
+        contactMethod: "Email",
+        subject: `Assistance request for ${formName}`,
       });
-      onClose();
-    }, 2500);
+    } catch (err) {
+      console.error("Failed to submit assistance request:", err);
+    } finally {
+      setSubmitting(false);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          issueDescription: "",
+        });
+        onClose();
+      }, 2500);
+    }
   };
 
   const handleBackdropClick = (e) => {
@@ -143,9 +161,10 @@ const AssistanceModal = ({ formName, isOpen, onClose }) => {
               </button>
               <button
                 type="submit"
-                className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all cursor-pointer shadow-lg shadow-blue-100 active:scale-95 border-none"
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all cursor-pointer shadow-lg shadow-blue-100 active:scale-95 border-none disabled:opacity-60"
               >
-                Submit Request
+                {submitting ? "Submitting…" : "Submit Request"}
               </button>
             </div>
           </form>

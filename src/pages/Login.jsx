@@ -14,7 +14,15 @@ const Login = () => {
     setError("");
 
     if (isAdmin) {
-      if (form.username !== "admin" || form.password !== "admin") {
+      const envUsername = import.meta.env.VITE_ADMIN_USERNAME;
+      const envPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+
+      if (!envUsername || !envPassword) {
+        setError("Admin credentials are not configured in the environment.");
+        return;
+      }
+
+      if (form.username !== envUsername || form.password !== envPassword) {
         setError("Invalid admin credentials. Access denied.");
         return;
       }
@@ -27,7 +35,7 @@ const Login = () => {
         localStorage.setItem(
           "form_ease_admin",
           JSON.stringify({
-            username: "admin",
+            username: import.meta.env.VITE_ADMIN_USERNAME,
             location: form.location || "Punjab",
           })
         );

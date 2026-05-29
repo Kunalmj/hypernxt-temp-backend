@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createRequestService } from "../../services/api";
 
 /* ── Contact method icons ─────────────────────────────────────── */
 const IconEmail = () => (
@@ -69,15 +70,31 @@ const RequestServiceModal = ({ service, onClose }) => {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const set = (key, val) =>
     setForm((f) => ({ ...f, [key]: val }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-
-    setTimeout(onClose, 2500);
+    setSubmitting(true);
+    try {
+      await createRequestService({
+        fullName: form.name,
+        email: form.email,
+        phoneNumber: form.phone,
+        selectedService: form.specificService,
+        description: form.description,
+        contactMethod: form.contactMethod,
+        subject: form.subject || "Service request",
+      });
+    } catch (err) {
+      console.error("Failed to submit service request:", err);
+    } finally {
+      setSubmitting(false);
+      setSubmitted(true);
+      setTimeout(onClose, 2500);
+    }
   };
 
   const handleBackdrop = (e) => {
@@ -242,9 +259,10 @@ const RequestServiceModal = ({ service, onClose }) => {
 
               <button
                 type="submit"
-                className="flex-1 py-2.5 rounded-xl bg-[#1d4ed8] text-white font-bold"
+                disabled={submitting}
+                className="flex-1 py-2.5 rounded-xl bg-[#1d4ed8] text-white font-bold disabled:opacity-60"
               >
-                Submit Request →
+                {submitting ? "Submitting…" : "Submit Request →"}
               </button>
             </div>
           </form>
