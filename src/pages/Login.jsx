@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { indianStates } from "../utils/states";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "", username: "", location: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -13,36 +11,34 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
-    if (isAdmin) {
-      const envUsername = import.meta.env.VITE_ADMIN_USERNAME;
-      const envPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+    // Secret Admin gateway
+    const envUsername = import.meta.env.VITE_ADMIN_USERNAME;
+    const envPassword = import.meta.env.VITE_ADMIN_PASSWORD;
 
-      if (!envUsername || !envPassword) {
-        setError("Admin credentials are not configured in the environment.");
-        return;
-      }
+    const adminUser = envUsername || "admin@2000";
+    const adminPass = envPassword || "admin@2001";
 
-      if (form.username !== envUsername || form.password !== envPassword) {
-        setError("Invalid admin credentials. Access denied.");
-        return;
-      }
-    }
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (isAdmin) {
+    if (form.email === adminUser && form.password === adminPass) {
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
         localStorage.setItem(
           "form_ease_admin",
           JSON.stringify({
-            username: import.meta.env.VITE_ADMIN_USERNAME,
-            location: form.location || "Punjab",
+            username: adminUser,
+            location: "Punjab",
           })
         );
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
-      }
+        navigate("/admin/AdminDashboard");
+      }, 1500);
+      return;
+    }
+
+    // Normal Citizen flow
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigate("/");
     }, 1500);
   };
 
@@ -50,75 +46,31 @@ const Login = () => {
     <div className="w-full text-center">
       <div className="mb-6">
         <h1 className="text-[2.2rem] font-black mb-2 pt-5 tracking-tight text-slate-900 leading-none">
-          {isAdmin ? "Admin Portal" : "Hi Citizen"}
+          Hi Citizen
         </h1>
         <p className="text-slate-600 text-sm font-medium">
-          {isAdmin ? "Log in to manage your location" : "Welcome to FormEase"}
+          Welcome to FormEase
         </p>
       </div>
 
-
       <form onSubmit={handleSubmit} className="space-y-4 text-left">
         <div className="space-y-4">
-          {!isAdmin ? (
-            <>
-              <input
-                type="email"
-                required
-                placeholder="Citizen ID or Email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 font-medium"
-              />
-              <input
-                type="password"
-                required
-                placeholder="Security PIN"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 font-medium"
-              />
-            </>
-          ) : (
-            <>
-              <input
-                type="text"
-                required
-                placeholder="Admin Username"
-                value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
-                className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 font-medium"
-              />
-              <input
-                type="password"
-                required
-                placeholder="Admin Password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 font-medium"
-              />
-              <div className="relative">
-                <select
-                  required
-                  value={form.location}
-                  onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-700 font-medium appearance-none cursor-pointer"
-                >
-                  <option value="">Select Jurisdiction State</option>
-                  {indianStates.filter(s => s !== "All India").map((state) => (
-                    <option key={state} value={state}>
-                      {state}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </>
-          )}
+          <input
+            type="text"
+            required
+            placeholder="Citizen ID or Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 font-medium"
+          />
+          <input
+            type="password"
+            required
+            placeholder="Security PIN"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3.5 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 font-medium"
+          />
         </div>
         
         {error && (
@@ -127,11 +79,9 @@ const Login = () => {
           </div>
         )}
 
-        {!isAdmin && (
-          <div className="flex justify-end pt-1">
-            <Link to="#" className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors">Forgot password?</Link>
-          </div>
-        )}
+        <div className="flex justify-end pt-1">
+          <Link to="#" className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors">Forgot password?</Link>
+        </div>
 
         <button
           type="submit"

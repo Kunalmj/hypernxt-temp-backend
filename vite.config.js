@@ -21,16 +21,11 @@ export default defineConfig(({ mode }) => {
     throw new Error("Missing VITE_DEV_PROXY_PATH in environment configuration.")
   }
 
-  // Check if real admin folder exists
-  const hasAdmin = fs.existsSync(path.resolve(__dirname, './src/admin'))
-
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        '@admin': hasAdmin
-          ? path.resolve(__dirname, './src/admin')
-          : path.resolve(__dirname, './src/admin-stub'),
+        '@admin': path.resolve(__dirname, './src/admin'),
       },
     },
     define: {
